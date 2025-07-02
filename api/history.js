@@ -5,9 +5,9 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { temperature, turbidity, createdAt } = req.body;
+  const { temperature, turbidity, timestamp } = req.body;
 
-  if (temperature === undefined || turbidity === undefined || !createdAt) {
+  if (temperature === undefined || turbidity === undefined || !timestamp) {
     return res.status(400).json({ error: "Data tidak lengkap" });
   }
 
@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
       .add({
         temperature,
         turbidity,
-        timestamp: new Date(createdAt),
+        timestamp: new Date(timestamp),
       });
 
     return res.status(200).json({ message: "Data sensor berhasil disimpan ke history" });
