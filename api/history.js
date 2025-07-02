@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
       .add({
         temperature,
         turbidity,
-        createdAt: new Date(createdAt),
+        timestamp: new Date(createdAt),
       });
 
     return res.status(200).json({ message: "Data sensor berhasil disimpan ke history" });
