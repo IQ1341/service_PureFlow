@@ -1,24 +1,35 @@
 const { db, admin } = require('../firebase');
 
 module.exports = async (req, res) => {
-  // Allow only POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { temperature, turbidity, timestamp } = req.body;
 
-  // Validate required data
-  if (typeof temperature !== 'number' || typeof turbidity !== 'number' || !timestamp) {
-    return res.status(400).json({ error: "Data tidak lengkap atau format salah" });
+  console.log("📥 Data diterima dari ESP32:", req.body);
+
+  // Validasi data
+  if (typeof temperature !== 'number') {
+    return res.status(400).json({ error: "Temperature harus berupa angka" });
+  }
+
+  if (typeof turbidity !== 'number') {
+    return res.status(400).json({ error: "Turbidity harus berupa angka" });
+  }
+
+  if (!timestamp || typeof timestamp !== 'string') {
+    return res.status(400).json({ error: "Timestamp harus berupa string ISO 8601" });
   }
 
   try {
-    // Parse timestamp safely
     let parsedTimestamp;
-    if (!isNaN(Date.parse(timestamp))) {
-      parsedTimestamp = admin.firestore.Timestamp.fromDate(new Date(timestamp));
+    const dateObj = new Date(timestamp);
+
+    if (!isNaN(dateObj.getTime())) {
+      parsedTimestamp = admin.firestore.Timestamp.fromDate(dateObj);
     } else {
+      console.warn("⚠️ Timestamp tidak valid, menggunakan serverTimestamp()");
       parsedTimestamp = admin.firestore.FieldValue.serverTimestamp();
     }
 
@@ -28,6 +39,7 @@ module.exports = async (req, res) => {
       timestamp: parsedTimestamp,
     });
 
+    console.log("✅ Data sensor berhasil disimpan ke history");
     return res.status(200).json({ message: "✅ Data sensor berhasil disimpan ke history" });
   } catch (error) {
     console.error("❌ Error menyimpan history:", error);
